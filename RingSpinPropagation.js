@@ -17,8 +17,6 @@ module.exports = {
 // TODO:
 /*
 Add: Easings to the time.
-Fix: Any propagation over 1 beat seems to break? This may be because of another issue. But the propagation will always be 1 beat for some reason
-Fix: Events just not carrying data? They will be defaulted to 1 and stuff (Since step was what I was testing most, that worked. However when I had speed and rotation propagated, it just defaulted.)
 
 */
 
@@ -95,12 +93,12 @@ function fourTwentee(cursor, notes, events, walls, _, global, data) {
           startProp = getParam(selectedEvents[0].customData.prop)
         }
   
-        if(selectedEvents[0].customData.speed !== undefined) {
-          startSpeed = getParam(selectedEvents[0].customData.speed && SpeedPropagation)
+        if(selectedEvents[0].customData.speed !== undefined && SpeedPropagation) {
+          startSpeed = getParam(selectedEvents[0].customData.speed)
         }
   
-        if(selectedEvents[0].customData.rotation !== undefined) {
-          startRotation = getParam(selectedEvents[0].customData.rotation && RotationPropagation)
+        if(selectedEvents[0].customData.rotation !== undefined && SpeedPropagation) {
+          startRotation = getParam(selectedEvents[0].customData.rotation)
         }
       } else {
         console.log(`PROPOGATION ERROR: RINGSPIN at ${startBeat} HAS NO CUSTOMDATA.`)
@@ -113,16 +111,16 @@ function fourTwentee(cursor, notes, events, walls, _, global, data) {
           endStep = getParam(selectedEvents[1].customData.step)
         }
   
-        if(selectedEvents[1].customData.prop !== undefined) {
-          endProp = getParam(selectedEvents[1].customData.prop && PropPropagation)
+        if(selectedEvents[1].customData.prop !== undefined && PropPropagation) {
+          endProp = getParam(selectedEvents[1].customData.prop)
         }
   
-        if(selectedEvents[1].customData.speed) {
-          endSpeed = getParam(selectedEvents[1].customData.speed && SpeedPropagation)
+        if(selectedEvents[1].customData.speed !== undefined && SpeedPropagation) {
+          endSpeed = getParam(selectedEvents[1].customData.speed)
         }
   
-        if(selectedEvents[1].customData.rotation !== undefined) {
-          endRotation = getParam(selectedEvents[1].customData.rotation && RotationPropagation)
+        if(selectedEvents[1].customData.rotation !== undefined && RotationPropagation) {
+          endRotation = getParam(selectedEvents[1].customData.rotation)
         }
       } else {
         console.log(`PROPOGATION ERROR: RINGSPIN at ${endBeat} HAS NO CUSTOMDATA.`)
@@ -136,9 +134,14 @@ function fourTwentee(cursor, notes, events, walls, _, global, data) {
       let rotationInc = getInc(startRotation,endRotation,step)
       let timeInc = getInc(startBeat,endBeat,step);
 
+      console.log(`StepInfo | Start: ${startStep} , End: ${endStep} , Increment: ${stepInc}`)
+      console.log(`PropInfo | Start: ${startProp} , End: ${endProp} , Increment: ${propInc}`)
+      console.log(`SpeedInfo | Start: ${startSpeed} , End: ${endSpeed} , Increment: ${speedInc}`)
+      console.log(`RotInfo | Start: ${startRotation} , End: ${endRotation} , Increment: ${rotationInc}`)
+      console.log(`TimeInfo | Start: ${startBeat} , End: ${endBeat} , Increment: ${timeInc}`)
+
       console.log("Setting events...")
       for(let i = 1; i <= step-1; i++) { // Set i to 1 to avoid overlapping the first spin, and subtract 1 from the step so it doesnt overlap the end spin.
-        
         let event = {
           "b": startBeat+(timeInc*i),
           "et": 8,
