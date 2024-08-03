@@ -1,6 +1,18 @@
 
 // !INFO!: If you dont know what any of these parameters are; learn here: https://github.com/Aeroluna/Heck/wiki/Events#ring-rotation
+// Easings: https://easings.net/
 
+const easings = [ "Linear",
+  "easeInSine","easeOutSine","easeInOutSine",
+  "easeInCubic","easeOutCubic","easeInOutCubic",
+  "easeInQuint","easeOutQuint","easeInOutQuint",
+  "easeInCirc","easeOutCirc","easeInOutCirc",
+  "easeInElastic","easeOutElastic","easeInOutElastic",
+  "easeInQuad","easeOutQuad","easeInOutQuad",
+  "easeInQuart","easeOutQuart","easeInOutQuart",
+  "easeInExpo","easeOutExpo","easeInOutExpo",
+  "easeInBack","easeOutBack","easeInOutBack"
+]
 module.exports = {
   name: "Spin Propagation",
   params: {
@@ -9,22 +21,36 @@ module.exports = {
     PropPropagation: true,
     SpeedPropagation: true,
     RotationPropagation: true,
-    Step: ["16","2","4","8","32","64"]
+    TimePropagation: true,
+    Step: ["16","2","4","8","32","64"],
+    StepEasing: easings,
+    PropEasing: easings,
+    SpeedEasing: easings,
+    RotationEasing: easings,
+    TimeEasing: [ "Linear",
+      "easeInSine","easeOutSine","easeInOutSine",
+      "easeInCubic","easeOutCubic","easeInOutCubic",
+      "easeInQuint","easeOutQuint","easeInOutQuint",
+      "easeInCirc","easeOutCirc","easeInOutCirc",
+      "easeInQuad","easeOutQuad","easeInOutQuad",
+      "easeInQuart","easeOutQuart","easeInOutQuart",
+      "easeInExpo","easeOutExpo","easeInOutExpo",
+    ]
   },
   run: fourTwentee,
 };
-
-// TODO:
-/*
-Add: Easings to the time.
-
-*/
 
 function fourTwentee(cursor, notes, events, walls, _, global, data) {
     const StepPropagation = global.params.StepPropagation;
     const PropPropagation = global.params.PropPropagation;
     const SpeedPropagation = global.params.SpeedPropagation;
     const RotationPropagation = global.params.RotationPropagation;
+    const TimePropagation = global.params.TimePropagation;
+    const StepEasing = global.params.StepEasing;
+    const PropEasing = global.params.PropEasing;
+    const SpeedEasing = global.params.SpeedEasing;
+    const RotationEasing = global.params.RotationEasing;
+    const TimeEasing = global.params.TimeEasing;
     let step = 1;
 
     switch(global.params.Step) {
@@ -134,39 +160,74 @@ function fourTwentee(cursor, notes, events, walls, _, global, data) {
       let rotationInc = getInc(startRotation,endRotation,step)
       let timeInc = getInc(startBeat,endBeat,step);
 
-      console.log(`StepInfo | Start: ${startStep} , End: ${endStep} , Increment: ${stepInc}`)
-      console.log(`PropInfo | Start: ${startProp} , End: ${endProp} , Increment: ${propInc}`)
-      console.log(`SpeedInfo | Start: ${startSpeed} , End: ${endSpeed} , Increment: ${speedInc}`)
-      console.log(`RotInfo | Start: ${startRotation} , End: ${endRotation} , Increment: ${rotationInc}`)
-      console.log(`TimeInfo | Start: ${startBeat} , End: ${endBeat} , Increment: ${timeInc}`)
-
-      console.log("Setting events...")
       for(let i = 1; i <= step-1; i++) { // Set i to 1 to avoid overlapping the first spin, and subtract 1 from the step so it doesnt overlap the end spin.
+        let stepValue = 0;
+        let propValue = 0;
+        let speedValue = 0;
+        let rotationValue = 0;
+        let timeValue = 0;
+
+        if(TimePropagation) {
+            const position = normalize(startBeat+(timeInc*i),startBeat,endBeat) // From 0 to 1
+            const easedPos = ease(position,TimeEasing)
+            timeValue = denormalize(easedPos, startBeat,endBeat)
+        } else {
+
+        }
+        if(StepPropagation) {
+          const position = normalize(startStep+(stepInc*i),startStep,endStep) // From 0 to 1
+          const easedPos = ease(position,StepEasing)
+          stepValue = denormalize(easedPos, startStep,endStep)
+        } else {
+          
+        }
+        if(PropPropagation) {
+          const position = normalize(startProp+(propInc*i),startProp,endProp) // From 0 to 1
+          const easedPos = ease(position,PropEasing)
+          propValue = denormalize(easedPos, startProp,endProp)
+        } else {
+          
+        }
+        if(SpeedPropagation){
+          const position = normalize(startSpeed+(speedInc*i),startSpeed,endSpeed) // From 0 to 1
+          const easedPos = ease(position,SpeedEasing)
+          speedValue = denormalize(easedPos, startSpeed,endSpeed)
+        } else {
+          
+        }
+        if(RotationPropagation) {
+          const position = normalize(startRotation+(rotationInc*i),startRotation,endRotation) // From 0 to 1
+          const easedPos = ease(position,RotationEasing)
+          rotationValue = denormalize(easedPos, startRotation,endRotation)
+        } else {
+          
+        }
+
         let event = {
-          "b": startBeat+(timeInc*i),
+          "b": timeValue,
           "et": 8,
           "i": 5,
           "f": 1,
           "customData": {
             "direction": direction,
-            "step": startStep+(stepInc*i),
-            "prop": startProp+(propInc*i),
-            "speed": startSpeed+(speedInc*i),
-            "rotation": startRotation+(rotationInc*i),
+            "step": stepValue,
+            "prop": propValue,
+            "speed": speedValue,
+            "rotation": rotationValue,
             "nameFilter": nameFilter
           }
         };
-        // Delete any properties that arent numbers. (This would happen because one of the events doesnt have a property).
-        console.log("Set events.")
-        console.log("Checking direction validity.")
         if(direction == undefined) delete event.customData.direction;
-        console.log("Checked direction validity.")
-        if(isNaN(event.customData.step)) delete event.customData.step;
-        if(isNaN(event.customData.prop)) delete event.customData.prop;
-        if(isNaN(event.customData.speed)) delete event.customData.speed;
-        if(isNaN(event.customData.rotation)) delete event.customData.rotation;
         if(nameFilter == undefined) delete event.customData.nameFilter;
-    
+        if(timeValue == undefined) {
+          console.log(`Time for Ring spin was undefined, setting beat to 0.`)
+          event.customData.b = 0
+        }
+        if(stepValue == undefined) delete event.customData.step;
+        if(propValue == undefined) delete event.customData.prop;
+        if(speedValue == undefined) delete event.customData.speed;
+        if(rotationValue == undefined) delete event.customData.rotation; 
+
         events.push(event);
       }
     }
@@ -181,6 +242,14 @@ function getInc(num1, num2, step) { // Get the incement from 2 numbers and a ste
   return (num2-num1) / step;
 }
 
+function normalize(value, min, max) {
+  return (value - min) / (max - min);
+}
+
+function denormalize(value, min, max) {
+  return value * (max - min) + min;
+}
+
 
 function getParam(param) {
   if(param !== undefined) {
@@ -188,4 +257,95 @@ function getParam(param) {
   } else {
     return undefined;
   }
+}
+
+// Easings
+function ease(time, easing) {
+  const c1 = 1.70158; // For the Back easings
+  const c3 = c1 + 1; // For the Back easings
+  const c4 = (2 * Math.PI) / 3; // For elastic
+switch(easing) {
+  case "easeInSine":
+    return 1 - Math.cos((time * Math.PI) / 2);
+  case "easeOutSine":
+    return Math.sin((time * Math.PI) / 2);
+  case "easeInOutSine":
+    return -(Math.cos(Math.PI * time) - 1) / 2;
+  case "easeInCubic":
+    return time * time * time;
+  case "easeOutCubic":
+    return 1 - Math.pow(1 - time, 3);
+  case "easeInOutCubic":
+    return time < 0.5 ? 4 * time * time * time : 1 - Math.pow(-2 * time + 2, 3) / 2;
+  case "easeInQuint":
+    return time * time * time * time * time;
+  case "easeOutQuint":
+    return 1 - Math.pow(1 - time, 5);
+  case "easeInOutQuint":
+    return time < 0.5 ? 16 * time * time * time * time * time : 1 - Math.pow(-2 * time + 2, 5) / 2;
+  case "easeInCirc":
+    return 1 - Math.sqrt(1 - Math.pow(time, 2));
+  case "easeOutCirc":
+    return Math.sqrt(1 - Math.pow(time - 1, 2));
+  case "easeInOutCirc":
+    return time < 0.5
+    ? (1 - Math.sqrt(1 - Math.pow(2 * time, 2))) / 2
+    : (Math.sqrt(1 - Math.pow(-2 * time + 2, 2)) + 1) / 2;
+  case "easeInElastic":
+    return time === 0
+      ? 0
+      : time === 1
+      ? 1
+      : -Math.pow(2, 10 * time - 10) * Math.sin((time * 10 - 10.75) * c4);
+  case "easeOutElastic":
+    return time === 0
+      ? 0
+      : time === 1
+      ? 1
+      : Math.pow(2, -10 * time) * Math.sin((time * 10 - 0.75) * c4) + 1;
+  case "easeInOutElastic":
+    const c42 = (2 * Math.PI) / 4.5;
+    return time === 0
+    ? 0
+    : time === 1
+    ? 1
+    : time < 0.5
+    ? -(Math.pow(2, 20 * time - 10) * Math.sin((20 * time - 11.125) * c42)) / 2
+    : (Math.pow(2, -20 * time + 10) * Math.sin((20 * time - 11.125) * c42)) / 2 + 1;
+  case "easeInQuad":
+    return time * time;
+  case "easeOutQuad":
+    return 1 - (1 - time) * (1 - time);
+  case "easeInOutQuad":
+    return time < 0.5 ? 2 * time * time : 1 - Math.pow(-2 * time + 2, 2) / 2;
+  case "easeInQuart":
+    return time * time * time * time;
+  case "easeOutQuart":
+    return 1 - Math.pow(1 - time, 4);
+  case "easeInOutQuart":
+    return time < 0.5 ? 8 * time * time * time * time : 1 - Math.pow(-2 * time + 2, 4) / 2;
+  case "easeInEtimepo":
+    return time === 0 ? 0 : Math.pow(2, 10 * time - 10);
+  case "easeOutEtimepo":
+    return time === 1 ? 1 : 1 - Math.pow(2, -10 * time);
+  case "easeInOutEtimepo":
+    return time === 0
+    ? 0
+    : time === 1
+    ? 1
+    : time < 0.5 ? Math.pow(2, 20 * time - 10) / 2
+    : (2 - Math.pow(2, -20 * time + 10)) / 2;
+  case "easeInBack":
+    return c3 * time * time * time - c1 * time * time;
+  case "easeOutBack":
+    return 1 + c3 * Math.pow(time - 1, 3) + c1 * Math.pow(time - 1, 2);
+  case "easeInOutBack":
+    const c2 = c1 * 1.525;
+    return time < 0.5
+      ? (Math.pow(2 * time, 2) * ((c2 + 1) * 2 * time - c2)) / 2
+      : (Math.pow(2 * time - 2, 2) * ((c2 + 1) * (time * 2 - 2) + c2) + 2) / 2;
+
+  case "Linear":
+    return time
+}
 }
