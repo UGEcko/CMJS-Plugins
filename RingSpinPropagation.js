@@ -59,7 +59,6 @@ function fourTwentee(cursor, notes, events, walls, _, global, data) {
       if (events[i].selected && events[i].et == 8) {
           rawEvents.push(`${events[i]}`);
           console.log(`Found RINGSPIN: '${events[i]}'`)
-          delete events[i];
       }
     };
 
@@ -135,12 +134,13 @@ function fourTwentee(cursor, notes, events, walls, _, global, data) {
       let propInc = getInc(startProp,endProp,step);
       let speedInc = getInc(startSpeed,endSpeed,step);
       let rotationInc = getInc(startRotation,endRotation,step)
+      let timeInc = getInc(startBeat,endBeat,step);
 
       console.log("Setting events...")
-      for(let i = 0; i <= step; i++) { 
+      for(let i = 1; i <= step-1; i++) { // Set i to 1 to avoid overlapping the first spin, and subtract 1 from the step so it doesnt overlap the end spin.
         
         let event = {
-          "b": startBeat+((1/step)*i),
+          "b": startBeat+(timeInc*i),
           "et": 8,
           "i": 5,
           "f": 1,
