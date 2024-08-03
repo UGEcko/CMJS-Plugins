@@ -18,8 +18,7 @@ module.exports = {
 /*
 Add: Easings to the time.
 Fix: Any propagation over 1 beat seems to break? This may be because of another issue. But the propagation will always be 1 beat for some reason
-Fix: Ring events overlapping (The start and end are basically data points for the propagation, so it will create events on the start & end events, splice the start and end like I did in the strobe script)
-Fix: Events just not carrying data? They will be defaulted to 1 and stuff
+Fix: Events just not carrying data? They will be defaulted to 1 and stuff (Since step was what I was testing most, that worked. However when I had speed and rotation propagated, it just defaulted.)
 
 */
 
@@ -60,6 +59,7 @@ function fourTwentee(cursor, notes, events, walls, _, global, data) {
       if (events[i].selected && events[i].et == 8) {
           rawEvents.push(`${events[i]}`);
           console.log(`Found RINGSPIN: '${events[i]}'`)
+          delete events[i];
       }
     };
 
